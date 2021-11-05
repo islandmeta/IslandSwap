@@ -1,0 +1,38 @@
+{
+	"compiler": {
+		"version": "0.5.16+commit.9c3226ce"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"methods": {}
+		},
+		"userdoc": {
+			"methods": {},
+			"notice": "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/EnumerableMap.sol"
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"island/contracts/libraries/utils/EnumerableMap.sol": "EnumerableMap"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"optimizer": {
+			"enabled": true,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"island/contracts/libraries/utils/EnumerableMap.sol": {
+			"keccak256": "0xdd9a1dae87ad15dc91197d058acde885edc2ec3e7516e2989f2223a680e7798c",
+			"urls": [
+				"bzz-raw://48821eaeb5b27d98194fe66f332004fab7fd07802ef08b91ba4ae40cb2db70e0",
+				"dweb:/ipfs/QmZyHfjmVWCs7rFtwMG8GEJEWwL4c2tXwkxV7G9d5Hh5DF"
+			]
+		}
+	},
+	"version": 1
+}
