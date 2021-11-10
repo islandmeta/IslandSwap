@@ -1799,20 +1799,17 @@ contract LotteryNFT is ERC721, Ownable {
 interface IislandNFTMetaData{
     struct Metadata {
         uint256 period;
-        string  islandNFTName;
         string ipfsHash;
         uint8 level;
-        uint8 special;
-        uint8 typeOf;
+        uint8 typeOf; // 0 official 1 user 2 other
     }
     function getMetadatasForLevel(uint8 _level)  external view returns (Metadata[] memory);
 }
 
-interface IislandNFTFactory {
-    function mintIslandNFT(address _mintTo,IislandNFTMetaData.Metadata memory _metadata, uint8 _typeOf) external  returns (bool);
+interface IislandNFTFactory{
+    function mintIslandNFT(address _mintTo,IislandNFTMetaData.Metadata memory _metadata,uint8 _typeOf) external;
 }
-
-contract IislandLotteryV1 is LotteryOwnable, Initializable {
+contract Lottery is LotteryOwnable, Initializable {
     using SafeMath for uint256;
     using SafeMath for uint8;
     using SafeERC20 for IERC20;
@@ -1850,8 +1847,8 @@ contract IislandLotteryV1 is LotteryOwnable, Initializable {
     // address => [tokenId]
     mapping (address => uint256[]) public userInfo;
 
-    IislandNFTMetaData islandNFTMetaData;
-    IislandNFTFactory islandNFTFactory;
+    IislandNFTMetaData public islandNFTMetaData;
+    IislandNFTFactory public islandNFTFactory;
 
     uint256 public issueIndex = 0;
     uint256 public totalAddresses = 0;
@@ -1859,7 +1856,8 @@ contract IislandLotteryV1 is LotteryOwnable, Initializable {
     uint256 public lastTimestamp;
     uint256 public burnDivisor;
     uint256 public vaultShare;
-    uint256  randomSeed;
+
+    uint256 seed;
 
     uint8[4] public winningNumbers;
 
@@ -1890,7 +1888,7 @@ contract IislandLotteryV1 is LotteryOwnable, Initializable {
         address _owner,
         address _adminAddress,
         address _destroyAddress,
-        uint256 _ramdomSeed
+        uint256 _seed
     ) public initializer {
         islToken = _islToken;
         lotteryNFT = _lottery;
@@ -1899,10 +1897,10 @@ contract IislandLotteryV1 is LotteryOwnable, Initializable {
         adminAddress = _adminAddress;
         destroyAddress = _destroyAddress;
         lastTimestamp = block.timestamp;
-        randomSeed=_ramdomSeed;
         allocation = [30, 10, 5];
         burnDivisor = 20;
         vaultShare = 35;
+        seed=_seed;
         initOwner(_owner);
     }
 
@@ -2033,6 +2031,81 @@ contract IislandLotteryV1 is LotteryOwnable, Initializable {
         emit Drawing(issueIndex, winningNumbers);
     }
 
+    function drawing2(uint256 _externalRandomNumber,uint8[] memory number) public onlyAdmin {
+        require(!drawed(), "reset?");
+        require(drawingPhase, "enter drawing phase first");
+        bytes32 _structHash;
+        uint256 _randomNumber;
+        uint8 _maxNumber = maxNumber;
+        bytes32 _blockhash = blockhash(block.number-1);
+
+        // waste some gas fee here
+        for (uint i = 0; i < 10; i++) {
+            getTotalRewards(issueIndex);
+        }
+        uint256 gasleft = gasleft();
+
+        // 1
+        _structHash = keccak256(
+            abi.encode(
+                _blockhash,
+                totalAddresses,
+                gasleft,
+                _externalRandomNumber
+            )
+        );
+        _randomNumber  = uint256(_structHash);
+        assembly {_randomNumber := add(mod(_randomNumber, _maxNumber),1)}
+        //winningNumbers[0]=uint8(_randomNumber);
+
+        // 2
+        _structHash = keccak256(
+            abi.encode(
+                _blockhash,
+                totalAmount,
+                gasleft,
+                _externalRandomNumber
+            )
+        );
+        _randomNumber  = uint256(_structHash);
+        assembly {_randomNumber := add(mod(_randomNumber, _maxNumber),1)}
+        // winningNumbers[1]=uint8(_randomNumber);
+
+        // 3
+        _structHash = keccak256(
+            abi.encode(
+                _blockhash,
+                lastTimestamp,
+                gasleft,
+                _externalRandomNumber
+            )
+        );
+        _randomNumber  = uint256(_structHash);
+        assembly {_randomNumber := add(mod(_randomNumber, _maxNumber),1)}
+        // winningNumbers[2]=uint8(_randomNumber);
+
+        // 4
+        _structHash = keccak256(
+            abi.encode(
+                _blockhash,
+                gasleft,
+                _externalRandomNumber
+            )
+        );
+        _randomNumber  = uint256(_structHash);
+        assembly {_randomNumber := add(mod(_randomNumber, _maxNumber),1)}
+        //winningNumbers[3]=uint8(_randomNumber);
+
+        winningNumbers[0]=uint8(number[0]);
+        winningNumbers[1]=uint8(number[1]);
+        winningNumbers[2]=uint8(number[2]);
+        winningNumbers[3]=uint8(number[3]);
+
+        historyNumbers[issueIndex] = winningNumbers;
+        historyAmount[issueIndex] = calculateMatchingRewardAmount();
+        drawingPhase = false;
+        emit Drawing(issueIndex, winningNumbers);
+    }
 
     function buy(uint256 _price, uint8[4] memory _numbers) external {
         require(!drawed(), 'drawed, can not buy now');
@@ -2086,17 +2159,32 @@ contract IislandLotteryV1 is LotteryOwnable, Initializable {
     function claimReward(uint256 _tokenId) external {
         require(msg.sender == lotteryNFT.ownerOf(_tokenId), "not from owner");
         require (!lotteryNFT.getClaimStatus(_tokenId), "claimed");
-        (uint256 reward,uint8 level,uint256 seed) = getRewardView(_tokenId);
-        randomSeed=seed;
+        (uint256 reward,uint8 level,uint256 randomSeed) = getRewardView(_tokenId);
         lotteryNFT.claimReward(_tokenId);
         if(reward>0) {
             islToken.safeTransfer(address(msg.sender), reward);
-            mintIslandNFT(msg.sender,level);
+            if(level>0){
+                mintIslandNFT(msg.sender,level);
+                seed=randomSeed;
+            }
         }
         emit Claim(msg.sender, _tokenId, reward);
     }
 
-
+    function claimReward2(uint256 _tokenId) external {
+        require(msg.sender == lotteryNFT.ownerOf(_tokenId), "not from owner");
+        require (!lotteryNFT.getClaimStatus(_tokenId), "claimed");
+        (uint256 reward,uint8 level,uint256 randomSeed) = getRewardView(_tokenId);
+        lotteryNFT.claimReward(_tokenId);
+        if(reward>0) {
+            islToken.safeTransfer(address(msg.sender), reward);
+            // if(level>0){
+            //     mintIslandNFT(msg.sender,level);
+            //     seed=randomSeed;
+            // }
+        }
+        emit Claim(msg.sender, _tokenId, reward);
+    }
 
     function multiClaim(uint256[] memory _tickets) external {
         uint256 totalReward = 0;
@@ -2104,11 +2192,13 @@ contract IislandLotteryV1 is LotteryOwnable, Initializable {
             require (msg.sender == lotteryNFT.ownerOf(_tickets[i]), "not from owner");
             require (!lotteryNFT.getClaimStatus(_tickets[i]), "claimed");
             lotteryNFT.claimReward(_tickets[i]);
-            (uint256 reward,uint8 level,uint256 seed) = getRewardView(_tickets[i]);
-            randomSeed=seed;
+            (uint256 reward,uint8 level,uint256 randomSeed) = getRewardView(_tickets[i]);
             if(reward>0) {
                 totalReward = reward.add(totalReward);
-                mintIslandNFT(msg.sender,level);
+                if(level>0){
+                    mintIslandNFT(msg.sender,level);
+                    seed=randomSeed;
+                }
             }
         }
         if(totalReward>0) {
@@ -2120,9 +2210,53 @@ contract IislandLotteryV1 is LotteryOwnable, Initializable {
     function mintIslandNFT(address _minTo,uint8 _level) internal {
         IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
         if(metadatas.length>0){
-            uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,msg.sender,now)))%metadatas.length;
+            uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,block.number,seed,msg.sender,now)))%metadatas.length;
             islandNFTFactory.mintIslandNFT(_minTo,metadatas[rendomIndex],0);
         }
+    }
+
+    function mintIslandNFT1(address _minTo,uint8 _level) public {
+        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
+        if(metadatas.length>0){
+            uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,block.number,seed,msg.sender,now)))%metadatas.length;
+            islandNFTFactory.mintIslandNFT(_minTo,metadatas[rendomIndex],0);
+        }
+    }
+
+
+    function mintIslandNFT2(uint8 _level, uint256 _random) public view returns(uint256,uint256) {
+        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
+
+        uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,seed,msg.sender,now)))%metadatas.length;
+        uint256 rendomIndex2 = uint256(keccak256(abi.encodePacked(_random,block.difficulty,seed,msg.sender,now)))%metadatas.length;
+        return (rendomIndex,rendomIndex2);
+    }
+
+    function mintIslandNFT3(uint8 _level) public view returns(IislandNFTMetaData.Metadata[] memory) {
+        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
+
+        return metadatas;
+    }
+
+    function mintIslandNFT4(uint256 _random) public view returns(uint256,uint256) {
+
+        uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,seed,msg.sender,now)))%_random;
+        uint256 rendomIndex2 = uint256(keccak256(abi.encodePacked(_random,block.difficulty,seed,msg.sender,now)))%_random;
+        return (rendomIndex,rendomIndex2);
+    }
+
+    function mintIslandNFT5(uint256 _random,uint8 _level) public  returns(uint256,IislandNFTMetaData.Metadata memory) {
+        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
+        uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,block.number,seed,msg.sender,now)))%metadatas.length;
+
+        return (rendomIndex,metadatas[rendomIndex]);
+    }
+
+    function mintIslandNFT6(uint256 _random,uint8 _level) public view returns(uint256,IislandNFTMetaData.Metadata memory) {
+        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
+        uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,block.number,seed,msg.sender,now)))%metadatas.length;
+
+        return (rendomIndex,metadatas[rendomIndex]);
     }
 
     function generateNumberIndexKey(uint8[4] memory number) public pure returns (uint64[keyLengthForEachBuy] memory) {
@@ -2202,7 +2336,7 @@ contract IislandLotteryV1 is LotteryOwnable, Initializable {
         }
         uint256 random;
         if(matchingNumber==4){
-            random=uint256(keccak256(abi.encodePacked(gasleft(),randomSeed,uint160(msg.sender),block.difficulty, now)))/10000%10000;
+            random=uint256(keccak256(abi.encodePacked(gasleft(),uint160(msg.sender),block.difficulty, now)))/10000%10000;
             if(random<1000){
                 level=6;
             }else if(random<2500){
@@ -2220,7 +2354,7 @@ contract IislandLotteryV1 is LotteryOwnable, Initializable {
             uint256 vaultAmount = getTotalRewards(_issueIndex).mul(allocation[4-matchingNumber]).div(100);
             reward = amount.mul(1e12).div(getMatchingRewardAmount(_issueIndex, matchingNumber)).mul(vaultAmount);
         }
-        return (reward.div(1e12),level,random);
+        return (reward.div(1e12),level,random%255);
     }
 
 
