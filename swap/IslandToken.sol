@@ -243,7 +243,7 @@ contract IslandToken is DelegateERC20, Ownable {
 
     EnumerableSet.AddressSet private _minters;
 
-    uint256 private constant maxSupply = 10_000_000_000e18;     // the max supply of Island token
+    uint256 private constant maxSupply = 10000000000e18;     // the max supply of Island token
 
     constructor(uint256 airdropSupply) public ERC20("Islandswap Token", "ISL"){
         _mint(msg.sender, airdropSupply * 1e18);
