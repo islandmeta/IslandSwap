@@ -113,16 +113,16 @@ library EnumerableSet {
         return set._values.length;
     }
 
-    /**
-     * @dev Returns the value stored at position `index` in the set. O(1).
-     *
-     * Note that there are no guarantees on the ordering of values inside the
-     * array, and it may change when more values are added or removed.
-     *
-     * Requirements:
-     *
-     * - `index` must be strictly less than {length}.
-     */
+   /**
+    * @dev Returns the value stored at position `index` in the set. O(1).
+    *
+    * Note that there are no guarantees on the ordering of values inside the
+    * array, and it may change when more values are added or removed.
+    *
+    * Requirements:
+    *
+    * - `index` must be strictly less than {length}.
+    */
     function _at(Set storage set, uint256 index) private view returns (bytes32) {
         require(set._values.length > index, "EnumerableSet: index out of bounds");
         return set._values[index];
@@ -168,16 +168,16 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-    /**
-     * @dev Returns the value stored at position `index` in the set. O(1).
-     *
-     * Note that there are no guarantees on the ordering of values inside the
-     * array, and it may change when more values are added or removed.
-     *
-     * Requirements:
-     *
-     * - `index` must be strictly less than {length}.
-     */
+   /**
+    * @dev Returns the value stored at position `index` in the set. O(1).
+    *
+    * Note that there are no guarantees on the ordering of values inside the
+    * array, and it may change when more values are added or removed.
+    *
+    * Requirements:
+    *
+    * - `index` must be strictly less than {length}.
+    */
     function at(Bytes32Set storage set, uint256 index) internal view returns (bytes32) {
         return _at(set._inner, index);
     }
@@ -222,16 +222,16 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-    /**
-     * @dev Returns the value stored at position `index` in the set. O(1).
-     *
-     * Note that there are no guarantees on the ordering of values inside the
-     * array, and it may change when more values are added or removed.
-     *
-     * Requirements:
-     *
-     * - `index` must be strictly less than {length}.
-     */
+   /**
+    * @dev Returns the value stored at position `index` in the set. O(1).
+    *
+    * Note that there are no guarantees on the ordering of values inside the
+    * array, and it may change when more values are added or removed.
+    *
+    * Requirements:
+    *
+    * - `index` must be strictly less than {length}.
+    */
     function at(AddressSet storage set, uint256 index) internal view returns (address) {
         return address(uint256(_at(set._inner, index)));
     }
@@ -277,16 +277,16 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-    /**
-     * @dev Returns the value stored at position `index` in the set. O(1).
-     *
-     * Note that there are no guarantees on the ordering of values inside the
-     * array, and it may change when more values are added or removed.
-     *
-     * Requirements:
-     *
-     * - `index` must be strictly less than {length}.
-     */
+   /**
+    * @dev Returns the value stored at position `index` in the set. O(1).
+    *
+    * Note that there are no guarantees on the ordering of values inside the
+    * array, and it may change when more values are added or removed.
+    *
+    * Requirements:
+    *
+    * - `index` must be strictly less than {length}.
+    */
     function at(UintSet storage set, uint256 index) internal view returns (uint256) {
         return uint256(_at(set._inner, index));
     }
@@ -385,16 +385,16 @@ library EnumerableMap {
         return map._entries.length;
     }
 
-    /**
-     * @dev Returns the key-value pair stored at position `index` in the map. O(1).
-     *
-     * Note that there are no guarantees on the ordering of entries inside the
-     * array, and it may change when more entries are added or removed.
-     *
-     * Requirements:
-     *
-     * - `index` must be strictly less than {length}.
-     */
+   /**
+    * @dev Returns the key-value pair stored at position `index` in the map. O(1).
+    *
+    * Note that there are no guarantees on the ordering of entries inside the
+    * array, and it may change when more entries are added or removed.
+    *
+    * Requirements:
+    *
+    * - `index` must be strictly less than {length}.
+    */
     function _at(Map storage map, uint256 index) private view returns (bytes32, bytes32) {
         require(map._entries.length > index, "EnumerableMap: index out of bounds");
 
@@ -462,15 +462,15 @@ library EnumerableMap {
         return _length(map._inner);
     }
 
-    /**
-     * @dev Returns the element stored at position `index` in the set. O(1).
-     * Note that there are no guarantees on the ordering of values inside the
-     * array, and it may change when more values are added or removed.
-     *
-     * Requirements:
-     *
-     * - `index` must be strictly less than {length}.
-     */
+   /**
+    * @dev Returns the element stored at position `index` in the set. O(1).
+    * Note that there are no guarantees on the ordering of values inside the
+    * array, and it may change when more values are added or removed.
+    *
+    * Requirements:
+    *
+    * - `index` must be strictly less than {length}.
+    */
     function at(UintToAddressMap storage map, uint256 index) internal view returns (uint256, address) {
         (bytes32 key, bytes32 value) = _at(map._inner, index);
         return (uint256(key), address(uint256(value)));
@@ -537,7 +537,7 @@ library Address {
     }
 
     function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-        return functionCall(target, data, "Address: low-level call failed");
+      return functionCall(target, data, "Address: low-level call failed");
     }
 
     /**
@@ -1443,18 +1443,18 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
      * @return bool whether the call correctly returned the expected magic value
      */
     function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory _data)
-    private returns (bool)
+        private returns (bool)
     {
         if (!to.isContract()) {
             return true;
         }
         bytes memory returndata = to.functionCall(abi.encodeWithSelector(
-                IERC721Receiver(to).onERC721Received.selector,
-                _msgSender(),
-                from,
-                tokenId,
-                _data
-            ), "ERC721: transfer to non ERC721Receiver implementer");
+            IERC721Receiver(to).onERC721Received.selector,
+            _msgSender(),
+            from,
+            tokenId,
+            _data
+        ), "ERC721: transfer to non ERC721Receiver implementer");
         bytes4 retval = abi.decode(returndata, (bytes4));
         return (retval == _ERC721_RECEIVED);
     }
@@ -1754,8 +1754,8 @@ contract LotteryNFT is ERC721, Ownable {
     constructor() public ERC721("Island Lottery Ticket", "CLT") {}
 
     function newLotteryItem(address player, uint8[4] memory _lotteryNumbers, uint256 _amount, uint256 _issueIndex)
-    public onlyOwner
-    returns (uint256)
+        public onlyOwner
+        returns (uint256)
     {
         _tokenIds.increment();
 
@@ -1782,9 +1782,9 @@ contract LotteryNFT is ERC721, Ownable {
     function claimReward(uint256 tokenId) external onlyOwner {
         claimInfo[tokenId] = true;
     }
-    function multiClaimReward(uint256[] memory _tokenIds) external onlyOwner {
-        for (uint i = 0; i < _tokenIds.length; i++) {
-            claimInfo[_tokenIds[i]] = true;
+    function multiClaimReward(uint256[] memory _lotteryIds) external onlyOwner {
+        for (uint i = 0; i < _lotteryIds.length; i++) {
+            claimInfo[_lotteryIds[i]] = true;
         }
     }
     function burn(uint256 tokenId) external onlyOwner {
@@ -1798,18 +1798,22 @@ contract LotteryNFT is ERC721, Ownable {
 
 interface IislandNFTMetaData{
     struct Metadata {
-        uint256 period;
         string ipfsHash;
-        uint8 level;
-        uint8 typeOf; // 0 official 1 user 2 other
+        uint8 level;    //普通 精良 稀有 史诗 传奇 神话
+        uint256 period;
+        uint8 typeOf;  // 0 official 1 user 2 other
+        uint256 hp;
+        uint256 ant;
+        uint256 def;
+        uint256 spd;
     }
-    function getMetadatasForLevel(uint8 _level)  external view returns (Metadata[] memory);
+     function getMetadatasForLevel(uint8 _level)  external view returns (Metadata[] memory);
 }
 
 interface IislandNFTFactory{
-    function mintIslandNFT(address _mintTo,IislandNFTMetaData.Metadata memory _metadata,uint8 _typeOf) external;
+    function mintIslandNFT(address _mintTo,IislandNFTMetaData.Metadata memory _metadata,uint8 _typeOf) external; 
 }
-contract Lottery is LotteryOwnable, Initializable {
+contract IslandLottery is LotteryOwnable, Initializable {
     using SafeMath for uint256;
     using SafeMath for uint8;
     using SafeERC20 for IERC20;
@@ -1856,7 +1860,7 @@ contract Lottery is LotteryOwnable, Initializable {
     uint256 public lastTimestamp;
     uint256 public burnDivisor;
     uint256 public vaultShare;
-
+   
     uint256 seed;
 
     uint8[4] public winningNumbers;
@@ -2031,81 +2035,6 @@ contract Lottery is LotteryOwnable, Initializable {
         emit Drawing(issueIndex, winningNumbers);
     }
 
-    function drawing2(uint256 _externalRandomNumber,uint8[] memory number) public onlyAdmin {
-        require(!drawed(), "reset?");
-        require(drawingPhase, "enter drawing phase first");
-        bytes32 _structHash;
-        uint256 _randomNumber;
-        uint8 _maxNumber = maxNumber;
-        bytes32 _blockhash = blockhash(block.number-1);
-
-        // waste some gas fee here
-        for (uint i = 0; i < 10; i++) {
-            getTotalRewards(issueIndex);
-        }
-        uint256 gasleft = gasleft();
-
-        // 1
-        _structHash = keccak256(
-            abi.encode(
-                _blockhash,
-                totalAddresses,
-                gasleft,
-                _externalRandomNumber
-            )
-        );
-        _randomNumber  = uint256(_structHash);
-        assembly {_randomNumber := add(mod(_randomNumber, _maxNumber),1)}
-        //winningNumbers[0]=uint8(_randomNumber);
-
-        // 2
-        _structHash = keccak256(
-            abi.encode(
-                _blockhash,
-                totalAmount,
-                gasleft,
-                _externalRandomNumber
-            )
-        );
-        _randomNumber  = uint256(_structHash);
-        assembly {_randomNumber := add(mod(_randomNumber, _maxNumber),1)}
-        // winningNumbers[1]=uint8(_randomNumber);
-
-        // 3
-        _structHash = keccak256(
-            abi.encode(
-                _blockhash,
-                lastTimestamp,
-                gasleft,
-                _externalRandomNumber
-            )
-        );
-        _randomNumber  = uint256(_structHash);
-        assembly {_randomNumber := add(mod(_randomNumber, _maxNumber),1)}
-        // winningNumbers[2]=uint8(_randomNumber);
-
-        // 4
-        _structHash = keccak256(
-            abi.encode(
-                _blockhash,
-                gasleft,
-                _externalRandomNumber
-            )
-        );
-        _randomNumber  = uint256(_structHash);
-        assembly {_randomNumber := add(mod(_randomNumber, _maxNumber),1)}
-        //winningNumbers[3]=uint8(_randomNumber);
-
-        winningNumbers[0]=uint8(number[0]);
-        winningNumbers[1]=uint8(number[1]);
-        winningNumbers[2]=uint8(number[2]);
-        winningNumbers[3]=uint8(number[3]);
-
-        historyNumbers[issueIndex] = winningNumbers;
-        historyAmount[issueIndex] = calculateMatchingRewardAmount();
-        drawingPhase = false;
-        emit Drawing(issueIndex, winningNumbers);
-    }
 
     function buy(uint256 _price, uint8[4] memory _numbers) external {
         require(!drawed(), 'drawed, can not buy now');
@@ -2159,7 +2088,8 @@ contract Lottery is LotteryOwnable, Initializable {
     function claimReward(uint256 _tokenId) external {
         require(msg.sender == lotteryNFT.ownerOf(_tokenId), "not from owner");
         require (!lotteryNFT.getClaimStatus(_tokenId), "claimed");
-        (uint256 reward,uint8 level,uint256 randomSeed) = getRewardView(_tokenId);
+        (uint256 reward,uint256 matchingNumber) = getRewardView(_tokenId);
+        (uint8 level,uint256 randomSeed) = getRewardLevelAndSeed(matchingNumber);
         lotteryNFT.claimReward(_tokenId);
         if(reward>0) {
             islToken.safeTransfer(address(msg.sender), reward);
@@ -2171,28 +2101,14 @@ contract Lottery is LotteryOwnable, Initializable {
         emit Claim(msg.sender, _tokenId, reward);
     }
 
-    function claimReward2(uint256 _tokenId) external {
-        require(msg.sender == lotteryNFT.ownerOf(_tokenId), "not from owner");
-        require (!lotteryNFT.getClaimStatus(_tokenId), "claimed");
-        (uint256 reward,uint8 level,uint256 randomSeed) = getRewardView(_tokenId);
-        lotteryNFT.claimReward(_tokenId);
-        if(reward>0) {
-            islToken.safeTransfer(address(msg.sender), reward);
-            // if(level>0){
-            //     mintIslandNFT(msg.sender,level);
-            //     seed=randomSeed;
-            // }
-        }
-        emit Claim(msg.sender, _tokenId, reward);
-    }
-
     function multiClaim(uint256[] memory _tickets) external {
         uint256 totalReward = 0;
         for (uint i = 0; i < _tickets.length; i++) {
             require (msg.sender == lotteryNFT.ownerOf(_tickets[i]), "not from owner");
             require (!lotteryNFT.getClaimStatus(_tickets[i]), "claimed");
-            lotteryNFT.claimReward(_tickets[i]);
-            (uint256 reward,uint8 level,uint256 randomSeed) = getRewardView(_tickets[i]);
+            lotteryNFT.claimReward(_tickets[i]); 
+            (uint256 reward,uint256 matchingNumber) = getRewardView(_tickets[i]);
+            (uint8 level,uint256 randomSeed) = getRewardLevelAndSeed(matchingNumber);
             if(reward>0) {
                 totalReward = reward.add(totalReward);
                 if(level>0){
@@ -2208,57 +2124,13 @@ contract Lottery is LotteryOwnable, Initializable {
     }
 
     function mintIslandNFT(address _minTo,uint8 _level) internal {
-        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
-        if(metadatas.length>0){
-            uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,block.number,seed,msg.sender,now)))%metadatas.length;
-            islandNFTFactory.mintIslandNFT(_minTo,metadatas[rendomIndex],0);
-        }
+            IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
+            if(metadatas.length>0){
+                uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,block.number,seed,msg.sender,now)))%metadatas.length;
+                islandNFTFactory.mintIslandNFT(_minTo,metadatas[rendomIndex],0);
+            }
     }
-
-    function mintIslandNFT1(address _minTo,uint8 _level) public {
-        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
-        if(metadatas.length>0){
-            uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,block.number,seed,msg.sender,now)))%metadatas.length;
-            islandNFTFactory.mintIslandNFT(_minTo,metadatas[rendomIndex],0);
-        }
-    }
-
-
-    function mintIslandNFT2(uint8 _level, uint256 _random) public view returns(uint256,uint256) {
-        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
-
-        uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,seed,msg.sender,now)))%metadatas.length;
-        uint256 rendomIndex2 = uint256(keccak256(abi.encodePacked(_random,block.difficulty,seed,msg.sender,now)))%metadatas.length;
-        return (rendomIndex,rendomIndex2);
-    }
-
-    function mintIslandNFT3(uint8 _level) public view returns(IislandNFTMetaData.Metadata[] memory) {
-        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
-
-        return metadatas;
-    }
-
-    function mintIslandNFT4(uint256 _random) public view returns(uint256,uint256) {
-
-        uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,seed,msg.sender,now)))%_random;
-        uint256 rendomIndex2 = uint256(keccak256(abi.encodePacked(_random,block.difficulty,seed,msg.sender,now)))%_random;
-        return (rendomIndex,rendomIndex2);
-    }
-
-    function mintIslandNFT5(uint256 _random,uint8 _level) public  returns(uint256,IislandNFTMetaData.Metadata memory) {
-        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
-        uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,block.number,seed,msg.sender,now)))%metadatas.length;
-
-        return (rendomIndex,metadatas[rendomIndex]);
-    }
-
-    function mintIslandNFT6(uint256 _random,uint8 _level) public view returns(uint256,IislandNFTMetaData.Metadata memory) {
-        IislandNFTMetaData.Metadata[] memory  metadatas=islandNFTMetaData.getMetadatasForLevel(_level);
-        uint256 rendomIndex = uint256(keccak256(abi.encodePacked(block.difficulty,block.number,seed,msg.sender,now)))%metadatas.length;
-
-        return (rendomIndex,metadatas[rendomIndex]);
-    }
-
+    
     function generateNumberIndexKey(uint8[4] memory number) public pure returns (uint64[keyLengthForEachBuy] memory) {
         uint64[4] memory tempNumber;
         tempNumber[0]=uint64(number[0]);
@@ -2321,7 +2193,7 @@ contract Lottery is LotteryOwnable, Initializable {
         return historyAmount[_issueIndex][0];
     }
 
-    function getRewardView(uint256 _tokenId) public view returns(uint256,uint8,uint256) {
+    function getRewardView(uint256 _tokenId) public view returns(uint256,uint256) {
         uint256 _issueIndex = lotteryNFT.getLotteryIssueIndex(_tokenId);
         uint8[4] memory lotteryNumbers = lotteryNFT.getLotteryNumbers(_tokenId);
         uint8[4] memory _winningNumbers = historyNumbers[_issueIndex];
@@ -2334,9 +2206,20 @@ contract Lottery is LotteryOwnable, Initializable {
                 matchingNumber= matchingNumber +1;
             }
         }
+        uint256 reward = 0;
+        if (matchingNumber > 1) {
+            uint256 amount = lotteryNFT.getLotteryAmount(_tokenId);
+            uint256 vaultAmount = getTotalRewards(_issueIndex).mul(allocation[4-matchingNumber]).div(100);
+            reward = amount.mul(1e12).div(getMatchingRewardAmount(_issueIndex, matchingNumber)).mul(vaultAmount);
+        }
+        return (reward.div(1e12),matchingNumber);
+    }
+
+    function getRewardLevelAndSeed(uint256 _matchingNumber) internal view returns(uint8,uint256) {
+        uint8 level;
         uint256 random;
-        if(matchingNumber==4){
-            random=uint256(keccak256(abi.encodePacked(gasleft(),uint160(msg.sender),block.difficulty, now)))/10000%10000;
+        if(_matchingNumber==4){
+            random=uint256(keccak256(abi.encodePacked(gasleft(),seed,uint160(msg.sender),block.difficulty, now)))/10000%10000;
             if(random<1000){
                 level=6;
             }else if(random<2500){
@@ -2344,27 +2227,19 @@ contract Lottery is LotteryOwnable, Initializable {
             }else{
                 level=4;
             }
-        }else if(matchingNumber<4&&matchingNumber>=2){
-            level=uint8(matchingNumber);
+        }else if(_matchingNumber<4&&_matchingNumber>=2){
+            level=uint8(_matchingNumber);
         }
-
-        uint256 reward = 0;
-        if (matchingNumber > 1) {
-            uint256 amount = lotteryNFT.getLotteryAmount(_tokenId);
-            uint256 vaultAmount = getTotalRewards(_issueIndex).mul(allocation[4-matchingNumber]).div(100);
-            reward = amount.mul(1e12).div(getMatchingRewardAmount(_issueIndex, matchingNumber)).mul(vaultAmount);
-        }
-        return (reward.div(1e12),level,random%255);
+        return (level,random%255);
     }
-
-
+    
     // Update admin address by the previous dev.
     function setAdmin(address _adminAddress) public onlyOwner {
         adminAddress = _adminAddress;
     }
 
 
-    // Withdraw without caring about rewards. EMERGENCY ONLY.
+        // Withdraw without caring about rewards. EMERGENCY ONLY.
     function adminWithdraw(uint256 _amount) public onlyAdmin {
         islToken.safeTransfer(address(msg.sender), _amount);
         emit DevWithdraw(msg.sender, _amount);
@@ -2394,7 +2269,5 @@ contract Lottery is LotteryOwnable, Initializable {
     function setBurnDivisor(uint256 _burnDivisor) external onlyAdmin {
         burnDivisor = _burnDivisor;
     }
-
-
 
 }

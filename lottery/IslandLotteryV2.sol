@@ -673,12 +673,12 @@ library SafeERC20 {
         address spender,
         uint256 value
     ) internal {
-    unchecked {
-        uint256 oldAllowance = token.allowance(address(this), spender);
-        require(oldAllowance >= value, "SafeERC20: decreased allowance below zero");
-        uint256 newAllowance = oldAllowance - value;
-        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
-    }
+        unchecked {
+            uint256 oldAllowance = token.allowance(address(this), spender);
+            require(oldAllowance >= value, "SafeERC20: decreased allowance below zero");
+            uint256 newAllowance = oldAllowance - value;
+            _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+        }
     }
 
     /**
@@ -782,7 +782,7 @@ pragma abicoder v2;
  * @notice It is a contract for a lottery system using
  * randomness provided externally.
  */
-contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
+contract IslandSwapLottery is ReentrancyGuard, IIslandSwapLottery, Ownable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
@@ -822,8 +822,8 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
         Status status;
         uint256 startTime;
         uint256 endTime;
-        uint256 priceTicketInIsland;
-        uint256 discountDivisor;
+        uint256 priceTicketInIsland; 
+        uint256 discountDivisor; 
         uint256[6] rewardsBreakdown; // 0: 1 matching number // 5: 6 matching numbers
         uint256 treasuryFee; // 500: 5% // 200: 2% // 50: 0.5%
         uint256[6] islandPerBracket;
@@ -846,7 +846,7 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     // Bracket calculator is used for verifying claims for ticket prizes
     mapping(uint32 => uint32) public _bracketCalculator;
 
-    // Keeps track of number of ticket per unique combination for each lotteryId
+    // Keeps track of number of ticket per unique combination for each lotteryId 
     mapping(uint256 => mapping(uint32 => uint256)) public _numberTicketsPerLotteryId;
 
     // Keep track of user ticket ids for a given lotteryId
@@ -909,10 +909,10 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
      * @param _ticketNumbers: array of ticket numbers between 1,000,000 and 1,999,999
      */
     function buyTickets(uint256 _lotteryId, uint32[] calldata _ticketNumbers)
-    external
-    override
-    notContract
-    nonReentrant
+        external
+        override
+        notContract
+        nonReentrant
     {
         require(_ticketNumbers.length != 0, "No ticket specified");
         require(_ticketNumbers.length <= maxNumberTicketsPerBuyOrClaim, "Too many tickets");
@@ -920,7 +920,7 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
         require(_lotteries[_lotteryId].status == Status.Open, "Lottery is not open");
         require(block.timestamp < _lotteries[_lotteryId].endTime, "Lottery is over");
 
-        // Calculate number of Island to this contract
+        // Calculate number of Island to this contract 
         uint256 amountIslandToTransfer = _calculateTotalPriceForBulkTickets(
             _lotteries[_lotteryId].discountDivisor,
             _lotteries[_lotteryId].priceTicketInIsland,
@@ -930,7 +930,7 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
         // Transfer island tokens to this contract
         islandToken.safeTransferFrom(address(msg.sender), address(this), amountIslandToTransfer);
 
-        // Increment the total amount collected for the lottery round
+        // Increment the total amount collected for the lottery round 
         _lotteries[_lotteryId].amountCollectedInIsland += amountIslandToTransfer;
 
         for (uint256 i = 0; i < _ticketNumbers.length; i++) {
@@ -957,10 +957,10 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
     /**
-     * @notice Claim a set of winning tickets for a lottery
-     * @param _lotteryId: lottery id
-     * @param _ticketIds: array of ticket ids
-     * @param _brackets: array of brackets for the ticket ids
+     * @notice Claim a set of winning tickets for a lottery 
+     * @param _lotteryId: lottery id   
+     * @param _ticketIds: array of ticket ids 
+     * @param _brackets: array of brackets for the ticket ids 
      */
     function claimTickets(
         uint256 _lotteryId,
@@ -1028,8 +1028,8 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
 
-    // add externalRandomNumber to prevent node validators exploiting
-    function generatorRandomNumber(uint256 _externalRandomNumber) public onlyOperator {
+ // add externalRandomNumber to prevent node validators exploiting
+    function generatorRandomNumber(uint256 _externalRandomNumber) internal onlyOperator {
         bytes32 _structHash;
         uint256 _randomNumber;
         uint8 _maxNumber = 9;
@@ -1038,7 +1038,7 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
         lastTimestamp=block.timestamp;
 
         // // 1
-        _structHash = keccak256(abi.encode(_blockhash,totalAddresses,gasleft,_externalRandomNumber));
+         _structHash = keccak256(abi.encode(_blockhash,totalAddresses,gasleft,_externalRandomNumber));
         _randomNumber  = uint256(_structHash);
         assembly {_randomNumber := add(mod(_randomNumber, _maxNumber),1)}
         winningNumber=winningNumber.add(_randomNumber*10**5);
@@ -1082,10 +1082,10 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
      * @dev Callable by operator
      */
     function drawFinalNumberAndMakeLotteryClaimable(uint256 _lotteryId, bool _autoInjection)
-    external
-    override
-    onlyOperator
-    nonReentrant
+        external
+        override
+        onlyOperator
+        nonReentrant
     {
         require(_lotteries[_lotteryId].status == Status.Close, "Lottery not close");
         require(_lotteryId == viewCurrentLotteryId(), "Numbers not drawn");
@@ -1098,48 +1098,48 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
 
         // Calculate the amount to share post-treasury fee
         uint256 amountToShareToWinners = (
-        ((_lotteries[_lotteryId].amountCollectedInIsland) * (10000 - _lotteries[_lotteryId].treasuryFee))
+            ((_lotteries[_lotteryId].amountCollectedInIsland) * (10000 - _lotteries[_lotteryId].treasuryFee))
         ) / 10000;
 
         // Initializes the amount to withdraw to treasury
         uint256 amountToWithdrawToTreasury;
 
-        // Calculate prizes in Island for each bracket by starting from the highest one
+        // Calculate prizes in Island for each bracket by starting from the highest one 
         for (uint32 i = 0; i < 6; i++) {
             uint32 j = 5 - i;
             uint32 transformedWinningNumber = _bracketCalculator[j] + (finalNumber % (uint32(10)**(j + 1)));
 
             _lotteries[_lotteryId].countWinnersPerBracket[j] =
-            _numberTicketsPerLotteryId[_lotteryId][transformedWinningNumber] -
-            numberAddressesInPreviousBracket;
+                _numberTicketsPerLotteryId[_lotteryId][transformedWinningNumber] -
+                numberAddressesInPreviousBracket;
 
-            // A. If number of users for this _bracket number is superior to 0
+            // A. If number of users for this _bracket number is superior to 0 
             if (
                 (_numberTicketsPerLotteryId[_lotteryId][transformedWinningNumber] - numberAddressesInPreviousBracket) !=
                 0
             ) {
-                // B. If rewards at this bracket are > 0, calculate, else, report the numberAddresses from previous bracket
+                // B. If rewards at this bracket are > 0, calculate, else, report the numberAddresses from previous bracket 
                 if (_lotteries[_lotteryId].rewardsBreakdown[j] != 0) {
                     _lotteries[_lotteryId].islandPerBracket[j] =
-                    ((_lotteries[_lotteryId].rewardsBreakdown[j] * amountToShareToWinners) /
-                    (_numberTicketsPerLotteryId[_lotteryId][transformedWinningNumber] -
-                    numberAddressesInPreviousBracket)) /
-                    10000;
+                        ((_lotteries[_lotteryId].rewardsBreakdown[j] * amountToShareToWinners) /
+                            (_numberTicketsPerLotteryId[_lotteryId][transformedWinningNumber] -
+                                numberAddressesInPreviousBracket)) /
+                        10000;
 
                     // Update numberAddressesInPreviousBracket
                     numberAddressesInPreviousBracket = _numberTicketsPerLotteryId[_lotteryId][transformedWinningNumber];
                 }
-                // A. No Island to distribute, they are added to the amount to withdraw to treasury address
+                // A. No Island to distribute, they are added to the amount to withdraw to treasury address 
             } else {
                 _lotteries[_lotteryId].islandPerBracket[j] = 0;
 
                 amountToWithdrawToTreasury +=
-                (_lotteries[_lotteryId].rewardsBreakdown[j] * amountToShareToWinners) /
-                10000;
+                    (_lotteries[_lotteryId].rewardsBreakdown[j] * amountToShareToWinners) /
+                    10000;
             }
         }
 
-        // Update internal statuses for lottery
+        // Update internal statuses for lottery 
         _lotteries[_lotteryId].finalNumber = finalNumber;
         _lotteries[_lotteryId].status = Status.Claimable;
 
@@ -1174,12 +1174,12 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
     /**
-     * @notice Start the lottery
-     * @dev Callable by operator
-     * @param _endTime: endTime of the lottery
-     * @param _priceTicketInIsland: price of a ticket in Island
-     * @param _discountDivisor: the divisor to calculate the discount magnitude for bulks
-     * @param _rewardsBreakdown: breakdown of rewards per bracket (must sum to 10,000)
+     * @notice Start the lottery  
+     * @dev Callable by operator 
+     * @param _endTime: endTime of the lottery 
+     * @param _priceTicketInIsland: price of a ticket in Island 
+     * @param _discountDivisor: the divisor to calculate the discount magnitude for bulks 
+     * @param _rewardsBreakdown: breakdown of rewards per bracket (must sum to 10,000) 
      * @param _treasuryFee: treasury fee (10,000 = 100%, 100 = 1%)
      */
     function startLottery(
@@ -1209,30 +1209,30 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
 
         require(
             (_rewardsBreakdown[0] +
-            _rewardsBreakdown[1] +
-            _rewardsBreakdown[2] +
-            _rewardsBreakdown[3] +
-            _rewardsBreakdown[4] +
-            _rewardsBreakdown[5]) == 10000,
+                _rewardsBreakdown[1] +
+                _rewardsBreakdown[2] +
+                _rewardsBreakdown[3] +
+                _rewardsBreakdown[4] +
+                _rewardsBreakdown[5]) == 10000,
             "Rewards must equal 10000"
         );
 
         currentLotteryId++;
 
         _lotteries[currentLotteryId] = Lottery({
-        status: Status.Open,
-        startTime: block.timestamp,
-        endTime: _endTime,
-        priceTicketInIsland: _priceTicketInIsland,
-        discountDivisor: _discountDivisor,
-        rewardsBreakdown: _rewardsBreakdown,
-        treasuryFee: _treasuryFee,
-        islandPerBracket: [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],
-        countWinnersPerBracket: [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],
-        firstTicketId: currentTicketId,
-        firstTicketIdNextLottery: currentTicketId,
-        amountCollectedInIsland: pendingInjectionNextLottery,
-        finalNumber: 0
+            status: Status.Open,
+            startTime: block.timestamp,
+            endTime: _endTime,
+            priceTicketInIsland: _priceTicketInIsland,
+            discountDivisor: _discountDivisor,
+            rewardsBreakdown: _rewardsBreakdown,
+            treasuryFee: _treasuryFee,
+            islandPerBracket: [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],
+            countWinnersPerBracket: [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],
+            firstTicketId: currentTicketId,
+            firstTicketIdNextLottery: currentTicketId,
+            amountCollectedInIsland: pendingInjectionNextLottery,
+            finalNumber: 0
         });
 
         emit LotteryOpen(
@@ -1250,9 +1250,9 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
     /**
-     * @notice It allows the admin to recover wrong tokens sent to the contract
-     * @param _tokenAddress: the address of the token to withdraw
-     * @param _tokenAmount: the number of token amount to withdraw
+     * @notice It allows the admin to recover wrong tokens sent to the contract 
+     * @param _tokenAddress: the address of the token to withdraw 
+     * @param _tokenAmount: the number of token amount to withdraw 
      * @dev Only callable by owner.
      */
     function recoverWrongTokens(address _tokenAddress, uint256 _tokenAmount) external onlyOwner {
@@ -1264,14 +1264,14 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
     /**
-     * @notice Set Island price ticket upper/lower limit
+     * @notice Set Island price ticket upper/lower limit 
      * @dev Only callable by owner
      * @param _minPriceTicketInIsland: minimum price of a ticket in Island
      * @param _maxPriceTicketInIsland: maximum price of a ticket in Island
      */
     function setMinAndMaxTicketPriceInIsland(uint256 _minPriceTicketInIsland, uint256 _maxPriceTicketInIsland)
-    external
-    onlyOwner
+        external
+        onlyOwner
     {
         require(_minPriceTicketInIsland <= _maxPriceTicketInIsland, "minPrice must be < maxPrice");
 
@@ -1280,11 +1280,12 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
     /**
-     * @notice Set max number of tickets
-     * @dev Only callable by owner
+     * @notice Set max number of tickets 
+     * @dev Only callable by owner  
      */
     function setMaxNumberTicketsPerBuy(uint256 _maxNumberTicketsPerBuy) external onlyOwner {
-        require(_maxNumberTicketsPerBuy != 0, "Must be > 0");
+        require(_maxNumberTicketsPerBuy != 0, "number must be > 0");
+        require(_maxNumberTicketsPerBuy <=100, "number must be <= 100");
         maxNumberTicketsPerBuyOrClaim = _maxNumberTicketsPerBuy;
     }
 
@@ -1312,10 +1313,10 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
     /**
-     * @notice Calculate price of a set of tickets
-     * @param _discountDivisor: divisor for the discount
-     * @param _priceTicket price of a ticket (in Island)
-     * @param _numberTickets number of tickets to buy
+     * @notice Calculate price of a set of tickets  
+     * @param _discountDivisor: divisor for the discount 
+     * @param _priceTicket price of a ticket (in Island)  
+     * @param _numberTickets number of tickets to buy  
      */
     function calculateTotalPriceForBulkTickets(
         uint256 _discountDivisor,
@@ -1329,28 +1330,28 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
     /**
-     * @notice View current lottery id
+     * @notice View current lottery id  
      */
     function viewCurrentLotteryId() public view override returns (uint256) {
         return currentLotteryId;
     }
 
     /**
-     * @notice View lottery information
-     * @param _lotteryId: lottery id
+     * @notice View lottery information  
+     * @param _lotteryId: lottery id     
      */
     function viewLottery(uint256 _lotteryId) external view returns (Lottery memory) {
         return _lotteries[_lotteryId];
     }
 
     /**
-     * @notice View ticker statuses and numbers for an array of ticket ids
-     * @param _ticketIds: array of _ticketId
+     * @notice View ticker statuses and numbers for an array of ticket ids 
+     * @param _ticketIds: array of _ticketId 
      */
     function viewNumbersAndStatusesForTicketIds(uint256[] calldata _ticketIds)
-    external
-    view
-    returns (uint32[] memory, bool[] memory)
+        external
+        view
+        returns (uint32[] memory, bool[] memory)
     {
         uint256 length = _ticketIds.length;
         uint32[] memory ticketNumbers = new uint32[](length);
@@ -1369,11 +1370,11 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
     /**
-     * @notice View rewards for a given ticket, providing a bracket, and lottery id
-     * @dev Computations are mostly offchain. This is used to verify a ticket!
+     * @notice View rewards for a given ticket, providing a bracket, and lottery id 
+     * @dev Computations are mostly offchain. This is used to verify a ticket! 
      * @param _lotteryId: lottery id
      * @param _ticketId: ticket id
-     * @param _bracket: bracket for the ticketId to verify the claim and calculate rewards
+     * @param _bracket: bracket for the ticketId to verify the claim and calculate rewards 
      */
     function viewRewardsForTicketId(
         uint256 _lotteryId,
@@ -1397,11 +1398,11 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
     /**
-     * @notice View user ticket ids, numbers, and statuses of user for a given lottery
-     * @param _user: user address
-     * @param _lotteryId: lottery id
-     * @param _cursor: cursor to start where to retrieve the tickets
-     * @param _size: the number of tickets to retrieve
+     * @notice View user ticket ids, numbers, and statuses of user for a given lottery 
+     * @param _user: user address 
+     * @param _lotteryId: lottery id 
+     * @param _cursor: cursor to start where to retrieve the tickets 
+     * @param _size: the number of tickets to retrieve 
      */
     function viewUserInfoForLotteryId(
         address _user,
@@ -1409,14 +1410,14 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
         uint256 _cursor,
         uint256 _size
     )
-    external
-    view
-    returns (
-        uint256[] memory,
-        uint32[] memory,
-        bool[] memory,
-        uint256
-    )
+        external
+        view
+        returns (
+            uint256[] memory,
+            uint32[] memory,
+            bool[] memory,
+            uint256
+        )
     {
         uint256 length = _size;
         uint256 numberTicketsBoughtAtLotteryId = _userTicketIdsPerLotteryId[_user][_lotteryId].length;
@@ -1446,10 +1447,10 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
     }
 
     /**
-     * @notice Calculate rewards for a given ticket
+     * @notice Calculate rewards for a given ticket 
      * @param _lotteryId: lottery id
      * @param _ticketId: ticket id
-     * @param _bracket: bracket for the ticketId to verify the claim and calculate rewards
+     * @param _bracket: bracket for the ticketId to verify the claim and calculate rewards 为ticketId验证索赔和计算奖励
      */
     function _calculateRewardsForTicketId(
         uint256 _lotteryId,
@@ -1464,7 +1465,7 @@ contract IslandLotteryV2 is ReentrancyGuard, IIslandSwapLottery, Ownable {
 
         // Apply transformation to verify the claim provided by the user is true
         uint32 transformedWinningNumber = _bracketCalculator[_bracket] +
-        (winningTicketNumber % (uint32(10)**(_bracket + 1)));
+            (winningTicketNumber % (uint32(10)**(_bracket + 1)));
 
         uint32 transformedUserNumber = _bracketCalculator[_bracket] + (userNumber % (uint32(10)**(_bracket + 1)));
 

@@ -123,13 +123,12 @@ contract LpPool is Ownable {
     }
 
     // Update the given pool's island allocation point. Can only be called by the owner.
-    function setPool(uint256 _pid,address _lpToken, uint256 _allocPoint, bool _withUpdate) public onlyOwner {
+    function setPool(uint256 _pid,uint256 _allocPoint, bool _withUpdate) public onlyOwner {
         if (_withUpdate) {
             massUpdatePools();
         }
         uint256 prevAllocPoint = poolInfo[_pid].allocPoint;
         poolInfo[_pid].allocPoint = _allocPoint;
-        poolInfo[_pid].lpToken=IERC20(_lpToken);
         if (prevAllocPoint != _allocPoint) {
             totalAllocPoint = totalAllocPoint.sub(prevAllocPoint).add(_allocPoint);
         }
@@ -138,13 +137,11 @@ contract LpPool is Ownable {
     function batchSetPoolsByStakedToken(
         uint256[] memory _pids,
         uint256[] memory _allocPoints,
-        address[] memory _lpTokens,
         bool _withUpdate
     ) public onlyOwner {
         require(_pids.length == _allocPoints.length, "IslandSwapPools: Invalid length of pools");
-        require(_lpTokens.length == _allocPoints.length, "IslandSwapPools: Invalid length of pools");
         for(uint i = 0; i < _pids.length; i++) {
-            setPool(_pids[i],_lpTokens[i],_allocPoints[i], _withUpdate);
+            setPool(_pids[i],_allocPoints[i], _withUpdate);
         }
     }
 
@@ -166,17 +163,7 @@ contract LpPool is Ownable {
         migrator = _migrator;
     }
 
-    // Migrate lp token to another lp contract. Can be called by anyone. We trust that migrator contract is good.
-    function migrate(uint256 _pid) public {
-        require(address(migrator) != address(0), "migrate: no migrator");
-        PoolInfo storage pool = poolInfo[_pid];
-        IERC20 lpToken = pool.lpToken;
-        uint256 bal = lpToken.balanceOf(address(this));
-        lpToken.safeApprove(address(migrator), bal);
-        IERC20 newLpToken = migrator.migrate(lpToken);
-        require(bal == newLpToken.balanceOf(address(this)), "migrate: bad");
-        pool.lpToken = newLpToken;
-    }
+
 
     // Return reward multiplier over the given _from to _to block.
     function getMultiplier(uint256 _from, uint256 _to) public view returns (uint256) {
