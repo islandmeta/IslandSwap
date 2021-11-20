@@ -31,7 +31,7 @@ contract SinglePool is Ownable {
     uint256 public rewardPerBlock;
 
     // Bonus muliplier for early island makers.
-    uint256 public BONUS_MULTIPLIER = 1;
+    uint256 public BONUS_MULTIPLIER = 4;
 
     // Info of each pool.
     PoolInfo[] public poolInfo;
@@ -103,6 +103,7 @@ contract SinglePool is Ownable {
     }
 
     function updateMultiplier(uint256 multiplierNumber) public onlyOwner {
+        require(multiplierNumber<=4,"Invalid number");
         BONUS_MULTIPLIER = multiplierNumber;
     }
 
@@ -159,6 +160,7 @@ contract SinglePool is Ownable {
     // Stake stakedToken tokens to pool
     function deposit(uint256 _amount) public notPause{
         PoolInfo storage pool = poolInfo[0];
+        require(pool.allocPoint>0,"Invalid pool");
         UserInfo storage user = userInfo[msg.sender];
 
         // require (_amount.add(user.amount) <= maxStaking, 'exceed max stake');
@@ -184,6 +186,7 @@ contract SinglePool is Ownable {
     // Withdraw stakedToken tokens from STAKING.
     function withdraw(uint256 _amount) public notPause{
         PoolInfo storage pool = poolInfo[0];
+        require(pool.allocPoint>0,"Invalid pool");
         UserInfo storage user = userInfo[msg.sender];
         require(user.amount >= _amount, "withdraw: not good");
         updatePool(0);
@@ -202,14 +205,11 @@ contract SinglePool is Ownable {
     }
 
 
-    function setRewardPerBlock(uint256 _rewardPerBlock) public onlyOwner {
-        require(rewardPerBlock >0, 'not enough token');
-        rewardPerBlock = _rewardPerBlock;
-    }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
     function emergencyWithdraw() public notPause{
         PoolInfo storage pool = poolInfo[0];
+        require(pool.allocPoint>0,"Invalid pool");
         UserInfo storage user = userInfo[msg.sender];
         pool.lpToken.safeTransfer(address(msg.sender), user.amount);
         user.amount = 0;

@@ -6,7 +6,6 @@ import '../interfaces/IislandRouter.sol';
 import '../interfaces/IERC20.sol';
 import '../interfaces/IWETH.sol';
 
-import '../interfaces/IislandPair.sol';
 import "./lib/SafeMath.sol";
 import './lib/TransferHelper.sol';
 
@@ -27,7 +26,7 @@ library IslandLibrary {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'9580e734072354cf5babad7692e1fa8d5b0c685a1cd64de6cb5d3551577a6eba' // init code hash
+                hex'01c7caeca72954b0599a439cd94c398b99a050489d496568d224e15fbd0dba84' // init code hash
             ))));
     }
 

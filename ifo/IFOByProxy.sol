@@ -67,15 +67,6 @@ contract IFOByProxy is ReentrancyGuard, Initializable {
     _;
   }
 
-  function setOfferingAmount(uint256 _offerAmount) public onlyAdmin {
-    require (block.number < startBlock, 'no');
-    offeringAmount = _offerAmount;
-  }
-
-  function setRaisingAmount(uint256 _raisingAmount) public onlyAdmin {
-    require (block.number < startBlock, 'no');
-    raisingAmount = _raisingAmount;
-  }
 
   function deposit(uint256 _amount) public {
     require (block.number > startBlock && block.number < endBlock, 'not ifo time');

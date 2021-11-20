@@ -54,6 +54,8 @@ contract LpPool is Ownable {
     uint256 public totalAllocPoint = 0;
     // The block number when island mining starts.
     uint256 public startBlock;
+    
+    mapping(address=>bool) poolMap;
 
     // Control mining
     bool public paused = false;
@@ -88,6 +90,7 @@ contract LpPool is Ownable {
     }
 
     function updateMultiplier(uint256 multiplierNumber) public onlyOwner {
+        require(multiplierNumber<=4,"Invalid number");
         BONUS_MULTIPLIER = multiplierNumber;
     }
 
@@ -97,23 +100,25 @@ contract LpPool is Ownable {
 
     // Add a new lp to the pool. Can only be called by the owner.
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
-    function addPool(uint256 _allocPoint, IERC20 _lpToken, bool _withUpdate) public onlyOwner {
+    function addPool(uint256 _allocPoint, address _lpToken, bool _withUpdate) public onlyOwner {
+        require(poolMap[_lpToken],"existing pool");
         if (_withUpdate) {
             massUpdatePools();
         }
         uint256 lastRewardBlock = block.number > startBlock ? block.number : startBlock;
         totalAllocPoint = totalAllocPoint.add(_allocPoint);
         poolInfo.push(PoolInfo({
-            lpToken: _lpToken,
+            lpToken: IERC20(_lpToken),
             allocPoint: _allocPoint,
             lastRewardBlock: lastRewardBlock,
             accIslandPerShare: 0
         }));
+        poolMap[_lpToken]=true;
     }
 
     function batchAddPools(
         uint256[] memory allocPoints,
-        IERC20[] memory stakedTokens,
+        address[] memory stakedTokens,
         bool _withUpdate
     ) public onlyOwner {
         require(stakedTokens.length == allocPoints.length,"IslandSwapPools: Invalid length of pools");
@@ -159,8 +164,9 @@ contract LpPool is Ownable {
     }
 
     // Set the migrator contract. Can only be called by the owner.
-    function setMigrator(IMigrator _migrator) public onlyOwner {
-        migrator = _migrator;
+    function setMigrator(address _migrator) public onlyOwner {
+        require(_migrator!=address(0),"migrator address invalid");
+        migrator = IMigrator(_migrator);
     }
 
 
@@ -228,6 +234,7 @@ contract LpPool is Ownable {
 
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
+        require(pool.allocPoint>0,"Invalid pool");
         updatePool(_pid);
         if (user.amount > 0) {
             uint256 pending = user.amount.mul(pool.accIslandPerShare).div(1e12).sub(user.rewardDebt);
@@ -248,6 +255,7 @@ contract LpPool is Ownable {
 
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
+        require(pool.allocPoint>0,"Invalid pool");
         require(user.amount >= _amount, "withdraw: not good");
 
         updatePool(_pid);
@@ -267,6 +275,7 @@ contract LpPool is Ownable {
     // Withdraw without caring about rewards. EMERGENCY ONLY.
     function emergencyWithdraw(uint256 _pid) public notPause{
         PoolInfo storage pool = poolInfo[_pid];
+        require(pool.allocPoint>0,"Invalid pool");
         UserInfo storage user = userInfo[_pid][msg.sender];
         pool.lpToken.safeTransfer(address(msg.sender), user.amount);
         emit EmergencyWithdraw(msg.sender, _pid, user.amount);
