@@ -101,7 +101,7 @@ contract LpPool is Ownable {
     // Add a new lp to the pool. Can only be called by the owner.
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
     function addPool(uint256 _allocPoint, address _lpToken, bool _withUpdate) public onlyOwner {
-        require(poolMap[_lpToken],"existing pool");
+        require(!poolMap[_lpToken],"existing pool");
         if (_withUpdate) {
             massUpdatePools();
         }
